@@ -42,11 +42,11 @@ app = Flask(__name__)
 CHUNK_SIZE = 1024 * 10
 index_html = requests.get(ASSET_URL, timeout=10).text
 icon_r = requests.get(ASSET_URL + '/favicon.ico', timeout=10).content
-exp1 = re.compile(r'^(?:https?://)?github\.com/(?P<author>.+?)/(?P<repo>.+?)/(?:releases|archive)/.*$')
-exp2 = re.compile(r'^(?:https?://)?github\.com/(?P<author>.+?)/(?P<repo>.+?)/(?:blob|raw)/.*$')
-exp3 = re.compile(r'^(?:https?://)?github\.com/(?P<author>.+?)/(?P<repo>.+?)/(?:info|git-).*$')
-exp4 = re.compile(r'^(?:https?://)?raw\.(?:githubusercontent|github)\.com/(?P<author>.+?)/(?P<repo>.+?)/.+?/.+$')
-exp5 = re.compile(r'^(?:https?://)?gist\.(?:githubusercontent|github)\.com/(?P<author>.+?)/.+?/.+$')
+exp1 = re.compile(r'^(?:https?://)?huggingface\.co/(?P<author>.+?)/(?P<repo>.+?)/(?:releases|archive)/.*$')
+exp2 = re.compile(r'^(?:https?://)?huggingface\.co/(?P<author>.+?)/(?P<repo>.+?)/(?:blob|raw)/.*$')
+exp3 = re.compile(r'^(?:https?://)?huggingface\.co/(?P<author>.+?)/(?P<repo>.+?)/(?:info|git-).*$')
+exp4 = re.compile(r'^(?:https?://)?raw\.(?:huggingfaceusercontent|huggingface)\.co/(?P<author>.+?)/(?P<repo>.+?)/.+?/.+$')
+exp5 = re.compile(r'^(?:https?://)?gist\.(?:huggingfaceusercontent|huggingface)\.co/(?P<author>.+?)/.+?/.+$')
 
 requests.sessions.default_headers = lambda: CaseInsensitiveDict()
 
@@ -139,12 +139,12 @@ def handler(u):
         return Response('Invalid input.', status=403)
 
     if (jsdelivr or pass_by) and exp2.match(u):
-        u = u.replace('/blob/', '@', 1).replace('github.com', 'cdn.jsdelivr.net/gh', 1)
+        u = u.replace('/blob/', '@', 1).replace('huggingface.co', 'cdn.jsdelivr.net/gh', 1)
         return redirect(u)
     elif (jsdelivr or pass_by) and exp4.match(u):
-        u = re.sub(r'(\.com/.*?/.+?)/(.+?/)', r'\1@\2', u, 1)
-        _u = u.replace('raw.githubusercontent.com', 'cdn.jsdelivr.net/gh', 1)
-        u = u.replace('raw.github.com', 'cdn.jsdelivr.net/gh', 1) if _u == u else _u
+        u = re.sub(r'(\.co/.*?/.+?)/(.+?/)', r'\1@\2', u, 1)
+        _u = u.replace('raw.huggingfaceusercontent.co', 'cdn.jsdelivr.net/gh', 1)
+        u = u.replace('raw.huggingface.co', 'cdn.jsdelivr.net/gh', 1) if _u == u else _u
         return redirect(u)
     else:
         if exp2.match(u):
